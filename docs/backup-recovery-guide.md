@@ -794,9 +794,9 @@ sqlplus / as sysdba
 ```
 recover database using backup controlfile until cancel;
 ```
-- `Specify log:` 질문이 나오면 `/oradata/ORCL/redo01.log`를 입력한다.
-- `Media recovery complete`가 나올 때까지, 다시 물으면 `redo02.log`, `redo03.log` 순서로 입력한다.
-- 그다음 `alter database open resetlogs;`를 실행한다.
+1. `Specify log:` 질문이 나오면 `/oradata/ORCL/redo01.log`를 입력한다.
+2. `Media recovery complete`가 나올 때까지, 다시 물으면 `redo02.log`, `redo03.log` 순서로 입력한다.
+3. 그다음 `alter database open resetlogs;`를 실행한다.
 
 RMAN에서 이미 `OPEN RESETLOGS`까지 성공한 뒤에 이 명령을 실행하면 `ORA-01124: cannot recover data file 1 - file is in use or recovery`가 나고 바로 취소된다. DB가 이미 열려 있다는 뜻일 뿐, 아무것도 바뀌지 않는다.
 
