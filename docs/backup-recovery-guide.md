@@ -217,11 +217,10 @@ Commit complete.
          1 baseline   2026-10-31 14:40:13
 ```
 
-| 만든 것 | 왜 |
-|---|---|
-| 테이블스페이스 `lab_ts` | 4장에서 이 파일 하나만 지우고 복구한다. 시스템 파일을 건드리지 않으려고 따로 만든다 |
-| `lab.orders` 1만 행 | 복구 뒤 행 수로 데이터가 돌아왔는지 판단한다 |
-| `lab.event_log` | 시나리오마다 "백업 뒤에 넣은 행"을 하나씩 남긴다. **어느 시점까지 복구됐는지** 보여 주는 표시다 |
+**만든 것과 이유**
+- 테이블스페이스 `lab_ts`: 4장에서 이 파일 하나만 지우고 복구한다. 시스템 파일을 건드리지 않으려고 따로 만든다.
+- `lab.orders` 1만 행: 복구 뒤 행 수로 데이터가 돌아왔는지 판단한다.
+- `lab.event_log`: 시나리오마다 "백업 뒤에 넣은 행"을 하나씩 남긴다. **어느 시점까지 복구됐는지** 보여 주는 표시다.
 
 기본 키는 이름을 정하지 않아 Oracle이 `SYS_C…` 이름을 붙인다. 3장에서 이 이름을 직접 되돌려 본다. 운영에서는 `constraint orders_pk primary key`처럼 이름을 정해 두는 편이 관리하기 좋다.
 
@@ -271,14 +270,13 @@ CONFIGURE ARCHIVELOG DELETION POLICY TO BACKED UP 1 TIMES TO DISK;
 ```
 바꾼 줄은 끝의 `# default`가 사라진다. 19c는 `CONTROLFILE AUTOBACKUP`의 기본값이 이미 `ON`이다. 그래도 직접 설정해 두면 "의도한 값"이라는 기록이 남는다.
 
-| 설정 | 뜻과 이유 |
-|---|---|
-| `CONTROLFILE AUTOBACKUP ON` | 백업할 때마다, 그리고 DB 구조가 바뀔 때마다 컨트롤 파일과 spfile을 자동으로 백업한다. **5장과 6장 복구의 출발점**이다 |
-| `AUTOBACKUP FORMAT … cf_%F` | 자동 백업 파일 이름. `%F`에 DBID와 날짜가 들어가서, 컨트롤 파일이 없어도 DBID로 찾을 수 있다 |
-| `CHANNEL … FORMAT` | 일반 백업 파일 이름. `%d`는 DB 이름, `%T`는 날짜, `%U`는 겹치지 않는 고유 번호다 |
-| `RECOVERY WINDOW OF 7 DAYS` | 최근 7일 안의 어느 시점으로든 복구할 수 있게 백업을 남긴다. 그보다 오래된 백업은 쓸모없음(OBSOLETE)으로 본다 |
-| `BACKUP OPTIMIZATION ON` | 이미 백업했고 바뀌지 않은 파일은 다시 백업하지 않는다. 6장에서 이 설정이 복원 경로에 영향을 준 것을 직접 본다 |
-| `ARCHIVELOG DELETION POLICY` | 디스크에 한 번 이상 백업된 아카이브 로그만 지울 수 있게 막는다 |
+**설정의 뜻과 이유**
+- `CONTROLFILE AUTOBACKUP ON`: 백업할 때마다, 그리고 DB 구조가 바뀔 때마다 컨트롤 파일과 spfile을 자동으로 백업한다. **5장과 6장 복구의 출발점**이다.
+- `AUTOBACKUP FORMAT … cf_%F`: 자동 백업 파일 이름이다. `%F`에 DBID와 날짜가 들어가서, 컨트롤 파일이 없어도 DBID로 찾을 수 있다.
+- `CHANNEL … FORMAT`: 일반 백업 파일 이름이다. `%d`는 DB 이름, `%T`는 날짜, `%U`는 겹치지 않는 고유 번호다.
+- `RECOVERY WINDOW OF 7 DAYS`: 최근 7일 안의 어느 시점으로든 복구할 수 있게 백업을 남긴다. 그보다 오래된 백업은 쓸모없음(OBSOLETE)으로 본다.
+- `BACKUP OPTIMIZATION ON`: 이미 백업했고 바뀌지 않은 파일은 다시 백업하지 않는다. 6장에서 이 설정이 복원 경로에 영향을 준 것을 직접 본다.
+- `ARCHIVELOG DELETION POLICY`: 디스크에 한 번 이상 백업된 아카이브 로그만 지울 수 있게 막는다.
 
 ### 2-2. 첫 백업: Level 0
 
@@ -347,21 +345,18 @@ total 660M
 
 **화면 읽는 법**
 
-| 칸 | 값 | 뜻 |
-|---|---|---|
-| `LV` | `0` | Level 0 데이터 파일 백업. 루트, PDB, PDB$SEED 3묶음이라 3줄이다 |
-| `LV` | `A` | 아카이브 로그 백업. 백업 앞(Key 2)과 뒤(Key 6)에 하나씩 생긴다 |
-| `LV` | `F` | 컨트롤 파일과 spfile 자동 백업 |
-| Key 1 | `F`, `Compressed NO`, 14:41 | 1-3에서 테이블스페이스를 만든 **구조 변경 때문에** 자동으로 생긴 백업이다. 2-1에서 형식을 바꾸기 전이라 기본 위치(`$ORACLE_HOME/dbs`)에 저장됐다. 정상이다 |
+- `LV`가 `0`인 줄은 Level 0 데이터 파일 백업이다. 루트, PDB, PDB$SEED 3묶음이라 3줄이다.
+- `LV`가 `A`인 줄은 아카이브 로그 백업이다. 백업 앞(Key 2)과 뒤(Key 6)에 하나씩 생긴다.
+- `LV`가 `F`인 줄은 컨트롤 파일과 spfile 자동 백업이다.
+- Key 1(`F`, `Compressed NO`, 14:41)은 1-3에서 테이블스페이스를 만든 **구조 변경 때문에** 자동으로 생긴 백업이다. 2-1에서 형식을 바꾸기 전이라 기본 위치(`$ORACLE_HOME/dbs`)에 저장됐다. 정상이다.
 
 데이터가 들어 있는 `/oradata` 4.7GB가 압축 백업으로는 **660MB**가 됐다.
 
-| 명령 | 왜 |
-|---|---|
-| `INCREMENTAL LEVEL 0` | 내용은 전체 백업과 같지만 **뒤에 올 Level 1(증분)의 기준**이 된다. 그냥 `BACKUP DATABASE`로 만든 전체 백업은 증분의 기준이 될 수 없다 |
-| `PLUS ARCHIVELOG` | 백업 앞뒤의 아카이브 로그를 함께 백업한다. 데이터 파일 백업만으로는 일관된 상태로 복구할 수 없다 |
-| `COMPRESSED` | 기본(BASIC) 압축. 추가 라이선스가 필요 없다 |
-| `RESTORE … VALIDATE` | 파일을 덮어쓰지 않고 **백업을 읽을 수 있는지만** 검사한다. "백업은 있는데 복원이 안 되는" 상황을 미리 막는다 |
+**명령을 이렇게 쓴 이유**
+- `INCREMENTAL LEVEL 0`: 내용은 전체 백업과 같지만 **뒤에 올 Level 1(증분)의 기준**이 된다. 그냥 `BACKUP DATABASE`로 만든 전체 백업은 증분의 기준이 될 수 없다.
+- `PLUS ARCHIVELOG`: 백업 앞뒤의 아카이브 로그를 함께 백업한다. 데이터 파일 백업만으로는 일관된 상태로 복구할 수 없다.
+- `COMPRESSED`: 기본(BASIC) 압축이다. 추가 라이선스가 필요 없다.
+- `RESTORE … VALIDATE`: 파일을 덮어쓰지 않고 **백업을 읽을 수 있는지만** 검사한다. "백업은 있는데 복원이 안 되는" 상황을 미리 막는다.
 
 > **[PC]** 스냅샷: `백업-L0-완료`
 
@@ -415,10 +410,8 @@ SQL> select count(*) from lab.orders;
 ```
 시각을 넣을 때 **작은따옴표가 짝이 맞는지** 본다. `'2026-10-31 15:44:54, 'YYYY…`처럼 닫는 따옴표가 빠지면 `ORA-01756: quoted string not properly terminated`가 난다. 아무것도 바뀌지 않았으니 고쳐서 다시 실행한다.
 
-| 왜 | 설명 |
-|---|---|
-| `AS OF TIMESTAMP` | 언두(UNDO)에 남은 변경 전 이미지로 그 시각의 테이블 내용을 읽는다 |
-| 한계 | 언두는 일정 시간만 남는다(`undo_retention`, 기본 900초, 공간이 부족하면 더 짧다). 오래 지나면 `ORA-01555`가 나고, 그때는 RMAN 시점 복구로 넘어간다 |
+- `AS OF TIMESTAMP`는 언두(UNDO)에 남은 변경 전 이미지로 그 시각의 테이블 내용을 읽는다.
+- 한계: 언두는 일정 시간만 남는다(`undo_retention`, 기본 900초, 공간이 부족하면 더 짧다). 오래 지나면 `ORA-01555`가 나고, 그때는 RMAN 시점 복구로 넘어간다.
 
 ### A-2. 테이블 DROP
 
@@ -482,19 +475,15 @@ SYS_C007550    SYS_C007550
 
 **자주 나는 오류**
 
-| 오류 | 원인 | 해결 |
-|---|---|---|
-| `ORA-00918: column ambiguously defined` | 두 뷰에 모두 `index_name` 열이 있는데 어느 쪽인지 적지 않았다 | `i.index_name`처럼 앞에 별칭을 붙인다 |
-| `ORA-01418: specified index does not exist` | TABLE 줄의 `BIN$` 이름을 넣었다. 테이블은 이미 `ORDERS`로 돌아와 그 이름이 없다 | INDEX 줄의 이름을 넣는다 |
-| `ORA-23292: The constraint does not exist` | `<…>` 자리 표시를 그대로 실행했다 | 조회한 실제 이름으로 바꾼다 |
+- `ORA-00918: column ambiguously defined`: 두 뷰에 모두 `index_name` 열이 있는데 어느 쪽인지 적지 않았다. `i.index_name`처럼 앞에 별칭을 붙인다.
+- `ORA-01418: specified index does not exist`: TABLE 줄의 `BIN$` 이름을 넣었다. 테이블은 이미 `ORDERS`로 돌아와 그 이름이 없다. INDEX 줄의 이름을 넣는다.
+- `ORA-23292: The constraint does not exist`: `<…>` 자리 표시를 그대로 실행했다. 조회한 실제 이름으로 바꾼다.
 
 인덱스와 제약 조건에 같은 이름을 붙여도 된다. 처음 기본 키를 만들 때도 Oracle이 둘에 같은 이름을 붙였다. 둘은 이름을 따로 관리한다.
 
-| 왜 | 설명 |
-|---|---|
-| 휴지통(Recycle Bin) | `DROP TABLE`은 바로 지우지 않고 이름을 `BIN$…`으로 바꿔 둔다. 공간이 모자라면 오래된 것부터 실제로 지워진다 |
-| 되살릴 수 없는 경우 | `DROP TABLE … PURGE`, `TRUNCATE`, SYSTEM 테이블스페이스의 테이블. 이때는 RMAN 시점 복구가 필요하다 |
-| 이름 되돌리기 | Flashback Table은 테이블 이름만 되돌린다. **인덱스와 제약 조건 이름은 DBA가 직접 되돌려야 한다.** 복구 뒤 확인 항목이다 |
+- 휴지통(Recycle Bin): `DROP TABLE`은 바로 지우지 않고 이름을 `BIN$…`으로 바꿔 둔다. 공간이 모자라면 오래된 것부터 실제로 지워진다.
+- 되살릴 수 없는 경우: `DROP TABLE … PURGE`, `TRUNCATE`, SYSTEM 테이블스페이스의 테이블이다. 이때는 RMAN 시점 복구가 필요하다.
+- 이름 되돌리기: Flashback Table은 테이블 이름만 되돌린다. **인덱스와 제약 조건 이름은 DBA가 직접 되돌려야 한다.** 복구 뒤 확인 항목이다.
 
 **기록 (실측)**
 
@@ -584,11 +573,10 @@ Checker run found 1 new persistent data failures
 ```
 `Checker run found 1 new persistent data failures`는 Oracle이 장애를 스스로 감지해 기록했다는 뜻이다.
 
-| 왜 이렇게 만드나 | 설명 |
-|---|---|
-| 지워도 바로 오류가 나지 않는 이유 | 리눅스는 이미 열린 파일을 지워도, 연 프로세스는 계속 읽고 쓸 수 있다. 그래서 기존 세션은 멀쩡하다 |
-| `flush buffer_cache` | 메모리에 남은 블록을 비워 다음 조회가 디스크에서 읽게 만든다 |
-| 새 세션 | 새 서버 프로세스가 파일을 **새로 열 때** 오류가 난다. 실제 장애도 대부분 이렇게 발견된다 |
+**왜 이렇게 만드나**
+- 지워도 바로 오류가 나지 않는 이유: 리눅스는 이미 열린 파일을 지워도, 연 프로세스는 계속 읽고 쓸 수 있다. 그래서 기존 세션은 멀쩡하다.
+- `flush buffer_cache`: 메모리에 남은 블록을 비워 다음 조회가 디스크에서 읽게 만든다.
+- 새 세션: 새 서버 프로세스가 파일을 **새로 열 때** 오류가 난다. 실제 장애도 대부분 이렇게 발견된다.
 
 ### B-3. 복구
 
@@ -670,11 +658,10 @@ exit
 no failures found that match specification
 ```
 
-| 명령 | 왜 |
-|---|---|
-| `OFFLINE IMMEDIATE` | 파일이 없어 정상 체크포인트를 할 수 없으니 즉시 내린다. ARCHIVELOG 모드에서만 된다 |
-| RESTORE 다음 RECOVER | 꺼낸 파일은 Level 0 시점의 내용이다. 그 뒤의 로그를 적용해 지금 시점까지 앞으로 감는다 |
-| DB를 내리지 않음 | 다른 테이블스페이스를 쓰는 업무는 복구하는 동안에도 계속된다. ARCHIVELOG 모드의 가장 큰 장점이다 |
+**명령을 이렇게 쓴 이유**
+- `OFFLINE IMMEDIATE`: 파일이 없어 정상 체크포인트를 할 수 없으니 즉시 내린다. ARCHIVELOG 모드에서만 된다.
+- RESTORE 다음 RECOVER: 꺼낸 파일은 Level 0 시점의 내용이다. 그 뒤의 로그를 적용해 지금 시점까지 앞으로 감는다.
+- DB를 내리지 않는다: 다른 테이블스페이스를 쓰는 업무는 복구하는 동안에도 계속된다. ARCHIVELOG 모드의 가장 큰 장점이다.
 
 **기록 (실측)**
 
@@ -790,13 +777,12 @@ Statement processed
 - `-02`가 이미 아카이브 로그를 모두 알고 있어 `CATALOG`가 새로 등록할 파일이 없었다.
 - `already on disk as file /oradata/ORCL/redo03.log`는 **RMAN이 남아 있는 온라인 리두 로그를 스스로 적용했다**는 뜻이다. 이 로그에 seq 3까지의 변경이 들어 있었다.
 
-| 명령 | 왜 |
-|---|---|
-| `SET DBID` | 컨트롤 파일이 없으면 RMAN은 DBID를 모른다. 자동 백업 파일 이름(`cf_c-DBID-…`)을 찾으려면 필요하다 |
-| `RESTORE CONTROLFILE FROM AUTOBACKUP` | 최근 자동 백업을 찾아 `control_files`에 적힌 모든 위치에 복원한다 |
-| `CATALOG START WITH` | 복원한 컨트롤 파일이 모르는 아카이브 로그가 있으면 폴더를 읽어 등록한다. 없으면 "없다"고만 하고 넘어간다 |
-| `RECOVER DATABASE` | 아카이브 로그와 남은 온라인 리두 로그까지 적용한다. 리두가 살아 있으니 마지막 커밋까지 복구된다 |
-| `OPEN RESETLOGS` | 백업한 컨트롤 파일을 썼다면 손실이 없어도 반드시 RESETLOGS로 연다. 로그 번호가 1부터 다시 시작한다 |
+**명령을 이렇게 쓴 이유**
+- `SET DBID`: 컨트롤 파일이 없으면 RMAN은 DBID를 모른다. 자동 백업 파일 이름(`cf_c-DBID-…`)을 찾으려면 필요하다.
+- `RESTORE CONTROLFILE FROM AUTOBACKUP`: 최근 자동 백업을 찾아 `control_files`에 적힌 모든 위치에 복원한다.
+- `CATALOG START WITH`: 복원한 컨트롤 파일이 모르는 아카이브 로그가 있으면 폴더를 읽어 등록한다. 없으면 "없다"고만 하고 넘어간다.
+- `RECOVER DATABASE`: 아카이브 로그와 남은 온라인 리두 로그까지 적용한다. 리두가 살아 있으니 마지막 커밋까지 복구된다.
+- `OPEN RESETLOGS`: 백업한 컨트롤 파일을 썼다면 손실이 없어도 반드시 RESETLOGS로 연다. 로그 번호가 1부터 다시 시작한다.
 
 **RMAN이 `RMAN-06054: media recovery requesting unknown archived log`로 멈췄을 때만** 아래 방법을 쓴다. RMAN이 온라인 리두 로그를 스스로 적용하지 못한 경우다.
 
@@ -923,10 +909,8 @@ ORACLE instance shut down.
 ```
 **Current log sequence 값을 적는다.** (실제 값: 4. 5장의 RESETLOGS 뒤라 번호가 작다)
 
-| 행 | 어디에 기록됐나 | 복구 뒤 예상 |
-|---|---|---|
-| seq 4 | `archive log current`로 아카이브 로그(`/backup/arch`)에 들어갔다 | **남는다** |
-| seq 5 | 온라인 리두 로그(`/oradata`)에만 있다 | **잃는다** |
+- seq 4: `archive log current`로 아카이브 로그(`/backup/arch`)에 들어갔다. 복구 뒤 **남는다**.
+- seq 5: 온라인 리두 로그(`/oradata`)에만 있다. 복구 뒤 **잃는다**.
 
 ### D-2. 장애 만들기
 
@@ -1057,12 +1041,11 @@ Statement processed
 - **PDB$SEED(5, 6, 8번)는 14:46 백업(`TAG…144639`, 이전 세대)에서 복원됐다.** 5장의 새 Level 0이 BACKUP OPTIMIZATION 때문에 SEED를 건너뛰었기 때문이다. RMAN은 RESETLOGS 이전 세대의 백업도 문제없이 골라 썼다.
 - 나머지 루트와 PDB 파일은 5장 뒤의 새 Level 0(`TAG…171734`)에서 복원됐다. 그래서 적용할 로그가 seq 2와 3뿐이었고 복구가 1초 만에 끝났다.
 
-| 명령 | 왜 |
-|---|---|
-| `startup nomount` | 컨트롤 파일이 없으니 인스턴스(메모리와 프로세스)만 올린다. spfile만 있으면 된다 |
-| `SET UNTIL SEQUENCE N+1` | "N+1번 로그 **직전**까지" 복구한다는 뜻이다. N+1번은 온라인 리두 로그였고 디스크와 함께 사라졌다 |
-| 이 줄 없이 `RECOVER DATABASE`만 하면 | 끝에 `RMAN-06054: media recovery requesting unknown archived log … sequence N+1`이 난다. 이 시나리오에서는 예상된 메시지다. 그대로 `OPEN RESETLOGS`로 열면 결과는 같다 |
-| `OPEN RESETLOGS` | 불완전 복구 뒤에는 반드시 필요하다. 리두 로그 파일도 이때 새로 만든다 |
+**명령을 이렇게 쓴 이유**
+- `startup nomount`: 컨트롤 파일이 없으니 인스턴스(메모리와 프로세스)만 올린다. spfile만 있으면 된다.
+- `SET UNTIL SEQUENCE N+1`: "N+1번 로그 **직전**까지" 복구한다는 뜻이다. N+1번은 온라인 리두 로그였고 디스크와 함께 사라졌다.
+- 이 줄 없이 `RECOVER DATABASE`만 하면 끝에 `RMAN-06054: media recovery requesting unknown archived log … sequence N+1`이 난다. 이 시나리오에서는 예상된 메시지다. 그대로 `OPEN RESETLOGS`로 열면 결과는 같다.
+- `OPEN RESETLOGS`: 불완전 복구 뒤에는 반드시 필요하다. 리두 로그 파일도 이때 새로 만든다.
 
 ### D-4. 확인과 새 백업
 
@@ -1163,13 +1146,12 @@ RMAN> RMAN> RMAN> RMAN> BACKUP OK: /backup/logs/rman_L1_20261101_0030.log
 ```
 붙여 넣을 때 화면에 입력 줄과 결과가 섞여 보일 수 있다. 아래 7-3에서 파일 내용을 직접 확인한다.
 
-| 줄 | 왜 |
-|---|---|
-| `export ORACLE_HOME …` | cron은 `.bash_profile`을 읽지 않는다. 환경 변수를 스크립트 안에서 정해야 한다 |
-| Level 1 | Level 0 이후 **바뀐 블록만** 백업한다. 실제로 40초 만에 끝났다 |
-| `DELETE OBSOLETE` | 보관 정책(7일)보다 오래된 백업을 지워 디스크가 차지 않게 한다 |
-| `CROSSCHECK` | 기록에는 있지만 디스크에서 사라진 백업이 있는지 대조한다 |
-| `grep RMAN-, ORA-` | 실패를 한 줄로 알 수 있게 한다. 운영에서는 이 줄을 메일이나 메신저 알림으로 바꾼다 |
+**줄마다 넣은 이유**
+- `export ORACLE_HOME …`: cron은 `.bash_profile`을 읽지 않는다. 환경 변수를 스크립트 안에서 정해야 한다.
+- Level 1: Level 0 이후 **바뀐 블록만** 백업한다. 실제로 40초 만에 끝났다.
+- `DELETE OBSOLETE`: 보관 정책(7일)보다 오래된 백업을 지워 디스크가 차지 않게 한다.
+- `CROSSCHECK`: 기록에는 있지만 디스크에서 사라진 백업이 있는지 대조한다.
+- `grep RMAN-, ORA-`: 실패를 한 줄로 알 수 있게 한다. 운영에서는 이 줄을 메일이나 메신저 알림으로 바꾼다.
 
 ### 7-2. cron 등록
 
@@ -1223,13 +1205,12 @@ Finished Control File and SPFILE Autobackup at 2026-11-01 00:30:46
 active
 ```
 
-| 확인 | 정상 |
-|---|---|
-| `cat` | `#!/bin/bash`부터 `find …`까지 빠진 줄이 없다 |
-| `grep` | `Finished` 줄만 있고 `RMAN-`, `ORA-` 줄이 없다 |
-| `LIST BACKUP SUMMARY` | `LV`가 `1`인 줄(Level 1)이 생겼다 |
-| `crond` | `active` |
-| `cron.log` | **첫 cron 실행 전에는 없다.** 첫 실행 다음 날 `tail -3 /backup/logs/cron.log`에 `BACKUP OK`가 보이면 자동화까지 검증된 것이다 |
+**정상이면**
+- `cat`: `#!/bin/bash`부터 `find …`까지 빠진 줄이 없다.
+- `grep`: `Finished` 줄만 있고 `RMAN-`, `ORA-` 줄이 없다.
+- `LIST BACKUP SUMMARY`: `LV`가 `1`인 줄(Level 1)이 생겼다.
+- `crond`: `active`가 나온다.
+- `cron.log`: **첫 cron 실행 전에는 없다.** 첫 실행 다음 날 `tail -3 /backup/logs/cron.log`에 `BACKUP OK`가 보이면 자동화까지 검증된 것이다.
 
 ---
 
@@ -1257,16 +1238,29 @@ RTO는 로그에 남은 시각으로 계산한 대략값이다.
 
 ## 9. 면접 대비 질문
 
-| 질문 | 답의 요지 |
-|---|---|
-| RESTORE와 RECOVER의 차이는? | RESTORE는 백업에서 파일을 꺼내 놓는 것(백업 시점), RECOVER는 로그를 적용해 원하는 시점까지 앞으로 감는 것 |
-| NOARCHIVELOG면 시나리오 B를 할 수 있나? | 못 한다. 백업 이후의 변경을 되살릴 로그가 없다. DB 전체를 백업 시점으로 되돌리는 것만 되고, 그것도 DB를 내린 상태여야 한다 |
-| 컨트롤 파일만 잃었는데 왜 RESETLOGS를 하나? | 복원한 컨트롤 파일은 백업 시점의 것이라 로그 정보가 지금과 맞지 않는다. 손실이 없어도 로그 순서를 새로 시작해 맞춘다 |
-| C와 D의 결과가 다른 이유는? | C는 온라인 리두가 살아 있어 마지막 커밋까지 복구했다. D는 리두까지 잃어 마지막 아카이브까지만 살렸다 |
-| D에서 데이터를 잃지 않으려면? | 온라인 리두 로그를 다른 디스크에 다중화한다. 아카이브를 자주 만들거나 다른 서버로 보낸다(Data Guard) |
-| BACKUP OPTIMIZATION이 복원에 어떤 영향을 주었나? | 바뀌지 않은 PDB$SEED를 새 백업에서 건너뛰었다. 그래서 D에서 SEED는 이전 세대 백업에서 복원됐다. RMAN은 세대를 건너 백업을 골랐다 |
-| 백업이 정말 쓸 수 있는지 어떻게 아나? | `RESTORE DATABASE VALIDATE`로 정기 검증하고, 실제 복구 리허설을 한다. 이 실습이 그 리허설이다 |
-| DROP한 테이블을 되살린 뒤 확인할 것은? | 인덱스와 제약 조건 이름이 `BIN$`으로 남는다. 원래 이름으로 직접 되돌린다 |
+**RESTORE와 RECOVER의 차이는?**
+RESTORE는 백업에서 파일을 꺼내 놓는 것(백업 시점)이고, RECOVER는 로그를 적용해 원하는 시점까지 앞으로 감는 것이다.
+
+**NOARCHIVELOG면 시나리오 B를 할 수 있나?**
+못 한다. 백업 이후의 변경을 되살릴 로그가 없다. DB 전체를 백업 시점으로 되돌리는 것만 되고, 그것도 DB를 내린 상태여야 한다.
+
+**컨트롤 파일만 잃었는데 왜 RESETLOGS를 하나?**
+복원한 컨트롤 파일은 백업 시점의 것이라 로그 정보가 지금과 맞지 않는다. 손실이 없어도 로그 순서를 새로 시작해 맞춘다.
+
+**C와 D의 결과가 다른 이유는?**
+C는 온라인 리두가 살아 있어 마지막 커밋까지 복구했다. D는 리두까지 잃어 마지막 아카이브까지만 살렸다.
+
+**D에서 데이터를 잃지 않으려면?**
+온라인 리두 로그를 다른 디스크에 다중화한다. 아카이브를 자주 만들거나 다른 서버로 보낸다(Data Guard).
+
+**BACKUP OPTIMIZATION이 복원에 어떤 영향을 주었나?**
+바뀌지 않은 PDB$SEED를 새 백업에서 건너뛰었다. 그래서 D에서 SEED는 이전 세대 백업에서 복원됐다. RMAN은 세대를 건너 백업을 골랐다.
+
+**백업이 정말 쓸 수 있는지 어떻게 아나?**
+`RESTORE DATABASE VALIDATE`로 정기 검증하고, 실제 복구 리허설을 한다. 이 실습이 그 리허설이다.
+
+**DROP한 테이블을 되살린 뒤 확인할 것은?**
+인덱스와 제약 조건 이름이 `BIN$`으로 남는다. 원래 이름으로 직접 되돌린다.
 
 ---
 
